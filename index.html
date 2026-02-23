@@ -519,6 +519,10 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
 /* Scrollbar */
 ::-webkit-scrollbar { width: 0; }
 
+/* Remove number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
 /* Filter tabs */
 .filter-tabs {
   display: flex;
@@ -606,7 +610,7 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
         <div style="display:flex; align-items:center; gap:12px;">
           <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCycleDay(-1)">−</button>
           <input type="number" id="input-cycle-day" value="1" min="1" max="60"
-            style="flex:1; text-align:center; font-size:1.8rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600); -moz-appearance:textfield;"
+            style="flex:1; min-width:0; width:0; text-align:center; font-size:1.8rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600); -moz-appearance:textfield; appearance:textfield;"
           >
           <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCycleDay(1)">+</button>
         </div>
@@ -653,6 +657,7 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
         <div class="option-pill" data-group="mucus" data-value="sticky" onclick="selectOption(this)">Pegajoso</div>
         <div class="option-pill" data-group="mucus" data-value="transparent" onclick="selectOption(this)">Transparente</div>
         <div class="option-pill" data-group="mucus" data-value="eggwhite" onclick="selectOption(this)">Elástico / Clara de ovo</div>
+        <div class="option-pill" data-group="mucus" data-value="granular" onclick="selectOption(this)">Granulado</div>
       </div>
     </div>
   </div>
@@ -779,7 +784,7 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
       <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
         <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCurrentCycle(-1)">−</button>
         <input type="number" id="input-current-cycle" value="1" min="1"
-          style="flex:1; text-align:center; font-size:1.5rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600);"
+          style="flex:1; min-width:0; width: 100%; text-align:center; font-size:1.5rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600); -moz-appearance:textfield; appearance:textfield;"
           onchange="saveCurrentCycle()">
         <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCurrentCycle(1)">+</button>
       </div>
@@ -1188,7 +1193,7 @@ function showResult(entry, result) {
     result.canRelate === 'no' ? '🚫 Abstinência' : '⚡ Relação à noite (com cautela)';
 
   const sensationLabels = { dry: 'Seca', nothing: 'Nenhuma sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorregadia', sticky: 'Pegajosa' };
-  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo' };
+  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo', granular: 'Granulado' };
 
   document.getElementById('result-content').innerHTML = `
     <div class="result-card ${cardClass}">
@@ -1246,7 +1251,7 @@ function renderHistory(filterCycle) {
   }
 
   const sensationLabels = { dry: 'Seca', nothing: 'S/ sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorreg.', sticky: 'Pegajosa' };
-  const mucusLabels = { none: 'S/ muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo', sticky: 'Pegajoso', transparent: 'Transp.', eggwhite: 'Clara ovo' };
+  const mucusLabels = { none: 'S/ muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo', sticky: 'Pegajoso', transparent: 'Transp.', eggwhite: 'Clara ovo', granular: 'Granulado' };
 
   let html = '';
   let lastCycle = null;
@@ -1284,7 +1289,7 @@ function showDetail(dateStr) {
   if (!entry) return;
 
   const sensationLabels = { dry: 'Seca', nothing: 'Nenhuma sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorregadia', sticky: 'Pegajosa' };
-  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo' };
+  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo', granular: 'Granulado' };
   const bleedingLabels = { none: 'Nenhum', menstruation: 'Menstruação', spotting: 'Spotting', escape: 'Escape' };
 
   const result = calculateMOB(entry, data);
