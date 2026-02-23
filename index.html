@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fdf2f8">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>MOB — Método de Ovulação Billings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose-50: #fff1f2;
+  --rose-100: #ffe4e6;
+  --rose-200: #fecdd3;
+  --rose-300: #fda4af;
+  --rose-400: #fb7185;
+  --rose-500: #f43f5e;
+  --rose-600: #e11d48;
+  --blush: #fdf2f8;
+  --cream: #fefce8;
+  --sage: #d1fae5;
+  --sage-dark: #6ee7b7;
+  --lavender: #ede9fe;
+  --lavender-dark: #a78bfa;
+  --amber: #fef3c7;
+  --amber-dark: #f59e0b;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--blush);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+h1, h2, h3, .serif { font-family: 'DM Serif Display', serif; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; animation: fadeIn 0.3s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 20px 20px 0;
+  text-align: center;
+}
+.header h1 {
+  font-size: 1.6rem;
+  color: var(--rose-600);
+  letter-spacing: -0.02em;
+}
+.header .subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+/* ===== TODAY CARD ===== */
+.today-card {
+  margin: 16px 16px 0;
+  background: linear-gradient(135deg, var(--rose-500), var(--rose-400));
+  border-radius: var(--radius);
+  padding: 22px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(244,63,94,0.3);
+}
+.today-card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+.today-card .date {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.today-card .cycle-day {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.2rem;
+  margin: 4px 0;
+}
+.today-card .status {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+.today-card .no-data {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: 6px;
+}
+
+/* ===== QUICK ACTIONS ===== */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px;
+}
+.quick-btn {
+  background: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Nunito', sans-serif;
+}
+.quick-btn:active { transform: scale(0.97); box-shadow: var(--shadow-md); }
+.quick-btn .icon { font-size: 1.6rem; }
+.quick-btn .label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+
+/* ===== REGISTER FORM ===== */
+.form-container {
+  padding: 16px;
+}
+.form-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 14px;
+  animation: slideUp 0.3s ease;
+}
+.form-card h3 {
+  font-size: 1rem;
+  color: var(--rose-600);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--rose-200);
+  transition: all 0.3s;
+}
+.step-dot.active { background: var(--rose-500); width: 24px; border-radius: 4px; }
+.step-dot.done { background: var(--sage-dark); }
+
+/* Option pills */
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.option-pill {
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: 2px solid var(--rose-100);
+  background: var(--white);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.option-pill:active { transform: scale(0.96); }
+.option-pill.selected {
+  background: var(--rose-500);
+  color: white;
+  border-color: var(--rose-500);
+}
+.option-pill.selected-green {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+/* Checkbox toggle */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-row span { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+.toggle {
+  width: 48px; height: 28px;
+  background: #e5e7eb;
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+  border: none;
+}
+.toggle.on { background: var(--rose-400); }
+.toggle::after {
+  content: '';
+  width: 22px; height: 22px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px; left: 3px;
+  transition: transform 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* Nav buttons */
+.form-nav {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--rose-500); color: white; box-shadow: 0 4px 15px rgba(244,63,94,0.3); }
+.btn-secondary { background: var(--rose-100); color: var(--rose-600); }
+.btn-outline { background: transparent; border: 2px solid var(--rose-200); color: var(--rose-500); }
+
+/* ===== RESULT CARD ===== */
+.result-screen { padding: 16px; }
+.result-card {
+  border-radius: var(--radius);
+  padding: 28px 22px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.4s ease;
+  margin-bottom: 14px;
+}
+.result-card.fertile {
+  background: linear-gradient(135deg, #fefce8, #fef9c3);
+  border: 2px solid #fde68a;
+}
+.result-card.infertile {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 2px solid #6ee7b7;
+}
+.result-card.menstruation {
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+  border: 2px solid #fda4af;
+}
+.result-card.waiting {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+}
+.result-seal {
+  font-size: 3.5rem;
+  margin-bottom: 8px;
+}
+.result-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.result-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.result-rule {
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  text-align: left;
+}
+.result-rule strong { color: var(--rose-600); }
+.relation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 14px;
+}
+.relation-badge.yes { background: #d1fae5; color: #065f46; }
+.relation-badge.no { background: #fee2e2; color: #991b1b; }
+.relation-badge.caution { background: #fef3c7; color: #92400e; }
+
+/* ===== HISTORY ===== */
+.history-list { padding: 0 16px 16px; }
+.history-item {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.history-item:active { transform: scale(0.98); }
+.history-seal { font-size: 1.8rem; }
+.history-info { flex: 1; }
+.history-info .day { font-weight: 700; font-size: 0.9rem; }
+.history-info .detail { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.history-info .relation-dot { display: inline-block; width: 8px; height: 8px; background: var(--rose-400); border-radius: 50%; margin-left: 6px; }
+.history-phase {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.history-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.history-empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+/* ===== SETTINGS ===== */
+.settings-container { padding: 16px; }
+.settings-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
+}
+.settings-card h3 {
+  font-size: 0.95rem;
+  color: var(--rose-600);
+  margin-bottom: 4px;
+}
+.settings-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.pbi-option {
+  padding: 14px;
+  border: 2px solid var(--rose-100);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pbi-option.selected { border-color: var(--rose-500); background: var(--rose-50); }
+.pbi-option .pbi-title { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
+.pbi-option .pbi-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+
+.danger-zone {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #fee2e2;
+}
+.btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Cycle header in history */
+.cycle-header {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.05rem;
+  color: var(--rose-600);
+  padding: 12px 4px 6px;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  padding-bottom: calc(8px + var(--safe-bottom));
+  border-top: 1px solid rgba(0,0,0,0.05);
+  z-index: 100;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.2s;
+}
+.nav-item .nav-icon { font-size: 1.4rem; }
+.nav-item .nav-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
+.nav-item.active .nav-label { color: var(--rose-500); }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-content {
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  padding: 24px;
+  padding-bottom: calc(24px + var(--safe-bottom));
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+.modal-content h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem;
+  color: var(--rose-600);
+  margin-bottom: 16px;
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+/* ===== TEXTAREA ===== */
+textarea.obs-input {
+  width: 100%;
+  border: 2px solid var(--rose-100);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  resize: none;
+  height: 70px;
+  outline: none;
+  transition: border-color 0.2s;
+  color: var(--text-primary);
+}
+textarea.obs-input:focus { border-color: var(--rose-400); }
+textarea.obs-input::placeholder { color: var(--text-muted); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; }
+
+/* Filter tabs */
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 10px;
+  overflow-x: auto;
+}
+.filter-tab {
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 2px solid var(--rose-100);
+  background: var(--white);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.filter-tab.active { background: var(--rose-500); color: white; border-color: var(--rose-500); }
+</style>
+</head>
+<body>
+
+<!-- ===== HOME SCREEN ===== -->
+<div id="screen-home" class="screen active">
+  <div class="header">
+    <h1>🌸 MOB</h1>
+    <div class="subtitle">Método de Ovulação Billings</div>
+  </div>
+
+  <div class="today-card" id="today-card">
+    <div class="date" id="today-date"></div>
+    <div class="cycle-day" id="today-cycle-day">Sem registro</div>
+    <div class="status" id="today-status">Toque em + para registrar o dia</div>
+  </div>
+
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="startRegister()">
+      <span class="icon">✏️</span>
+      <span class="label">Registrar Hoje</span>
+    </button>
+    <button class="quick-btn" onclick="showScreen('screen-history')">
+      <span class="icon">📊</span>
+      <span class="label">Histórico</span>
+    </button>
+    <button class="quick-btn" onclick="showScreen('screen-guide')">
+      <span class="icon">📖</span>
+      <span class="label">Guia Rápido</span>
+    </button>
+    <button class="quick-btn" onclick="showScreen('screen-settings')">
+      <span class="icon">⚙️</span>
+      <span class="label">Configurações</span>
+    </button>
+  </div>
+
+  <!-- Recent entries -->
+  <div style="padding: 0 16px;">
+    <h3 style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">Últimos registros</h3>
+    <div id="recent-entries"></div>
+  </div>
+</div>
+
+<!-- ===== REGISTER SCREEN ===== -->
+<div id="screen-register" class="screen">
+  <div class="header">
+    <h1>Registro do Dia</h1>
+    <div class="subtitle" id="register-date"></div>
+  </div>
+
+  <div class="step-indicator" id="step-indicator"></div>
+
+  <!-- Step 1: Cycle Info -->
+  <div id="step-1" class="form-container step-content">
+    <div class="form-card">
+      <h3>📅 Informações do Ciclo</h3>
+      <div style="margin-bottom: 14px;">
+        <label style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">Dia do Ciclo</label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCycleDay(-1)">−</button>
+          <input type="number" id="input-cycle-day" value="1" min="1" max="60"
+            style="flex:1; text-align:center; font-size:1.8rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600); -moz-appearance:textfield;"
+          >
+          <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCycleDay(1)">+</button>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:6px;">Dia 1 = primeiro dia de menstruação</div>
+      </div>
+      <div>
+        <label style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">Sangramento</label>
+        <div class="options-grid">
+          <div class="option-pill" data-group="bleeding" data-value="none" onclick="selectOption(this)">Nenhum</div>
+          <div class="option-pill" data-group="bleeding" data-value="menstruation" onclick="selectOption(this)">🔴 Menstruação</div>
+          <div class="option-pill" data-group="bleeding" data-value="spotting" onclick="selectOption(this)">Spotting</div>
+          <div class="option-pill" data-group="bleeding" data-value="escape" onclick="selectOption(this)">Escape</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Vulva Sensation -->
+  <div id="step-2" class="form-container step-content" style="display:none;">
+    <div class="form-card">
+      <h3>🌊 Sensação na Vulva</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Como você sentiu a vulva ao longo do dia?</p>
+      <div class="options-grid">
+        <div class="option-pill" data-group="sensation" data-value="dry" onclick="selectOption(this)">Seca</div>
+        <div class="option-pill" data-group="sensation" data-value="nothing" onclick="selectOption(this)">Nenhuma sensação</div>
+        <div class="option-pill" data-group="sensation" data-value="humid" onclick="selectOption(this)">Úmida</div>
+        <div class="option-pill" data-group="sensation" data-value="wet" onclick="selectOption(this)">Molhada</div>
+        <div class="option-pill" data-group="sensation" data-value="slippery" onclick="selectOption(this)">Escorregadia</div>
+        <div class="option-pill" data-group="sensation" data-value="sticky" onclick="selectOption(this)">Pegajosa</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Mucus -->
+  <div id="step-3" class="form-container step-content" style="display:none;">
+    <div class="form-card">
+      <h3>🔬 Aparência do Muco</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">O que você observou?</p>
+      <div class="options-grid">
+        <div class="option-pill" data-group="mucus" data-value="none" onclick="selectOption(this)">Sem muco</div>
+        <div class="option-pill" data-group="mucus" data-value="pasty" onclick="selectOption(this)">Pastoso</div>
+        <div class="option-pill" data-group="mucus" data-value="creamy" onclick="selectOption(this)">Cremoso</div>
+        <div class="option-pill" data-group="mucus" data-value="cloudy" onclick="selectOption(this)">Turvo/Branco</div>
+        <div class="option-pill" data-group="mucus" data-value="sticky" onclick="selectOption(this)">Pegajoso</div>
+        <div class="option-pill" data-group="mucus" data-value="transparent" onclick="selectOption(this)">Transparente</div>
+        <div class="option-pill" data-group="mucus" data-value="eggwhite" onclick="selectOption(this)">Elástico / Clara de ovo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Extra info -->
+  <div id="step-4" class="form-container step-content" style="display:none;">
+    <div class="form-card">
+      <h3>📝 Informações Extras</h3>
+      <div class="toggle-row">
+        <span>💑 Relação sexual hoje?</span>
+        <button class="toggle" id="toggle-relation" onclick="toggleSwitch(this)"></button>
+      </div>
+      <div class="toggle-row">
+        <span>⭐ Dia de Ápice?</span>
+        <button class="toggle" id="toggle-apex" onclick="toggleSwitch(this)"></button>
+      </div>
+      <div style="margin-top:14px;">
+        <label style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px;">Observações (opcional)</label>
+        <textarea class="obs-input" id="input-obs" placeholder="Stress, medicamentos, viagem, doença..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-nav">
+    <button class="btn btn-secondary" id="btn-prev" onclick="prevStep()" style="display:none;">Voltar</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Próximo</button>
+  </div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="screen-result" class="screen">
+  <div class="header">
+    <h1>Resultado do Dia</h1>
+  </div>
+  <div class="result-screen" id="result-content"></div>
+  <div class="form-nav">
+    <button class="btn btn-secondary" onclick="showScreen('screen-home'); refreshHome();">Início</button>
+    <button class="btn btn-primary" onclick="showScreen('screen-history'); renderHistory();">Ver Histórico</button>
+  </div>
+</div>
+
+<!-- ===== HISTORY SCREEN ===== -->
+<div id="screen-history" class="screen">
+  <div class="header">
+    <h1>Histórico</h1>
+    <div class="subtitle">Seus registros anteriores</div>
+  </div>
+  <div class="filter-tabs" id="cycle-filter-tabs"></div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- ===== GUIDE SCREEN ===== -->
+<div id="screen-guide" class="screen">
+  <div class="header">
+    <h1>📖 Guia Rápido</h1>
+  </div>
+  <div class="form-container">
+    <div class="form-card">
+      <h3>🔴 Selos Coloridos</h3>
+      <div style="font-size:0.85rem; line-height:1.7; color:var(--text-secondary);">
+        <p><strong style="color:#e11d48;">🔴 Vermelho</strong> — Dias de menstruação</p>
+        <p><strong style="color:#059669;">🟢 Verde</strong> — Dias inférteis (PBI confirmado)</p>
+        <p><strong style="color:#d97706;">⚪ Branco</strong> — Dias possivelmente férteis (mudança do PBI)</p>
+        <p><strong style="color:#d97706;">🟡 Amarelo</strong> — 1 a 3 dias após o Ápice (espera)</p>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>⭐ Dia Ápice</h3>
+      <p style="font-size:0.85rem; line-height:1.6; color:var(--text-secondary);">
+        O Ápice é o <strong>último dia</strong> de muco fértil ou sensação escorregadia. Só é identificado retrospectivamente — no dia seguinte, quando a sensação muda. Após o Ápice, conte 3 dias. A partir do 4º dia, a fase infértil pós-ovulatória está confirmada.
+      </p>
+    </div>
+    <div class="form-card">
+      <h3>📏 Regras do MOB</h3>
+      <div style="font-size:0.85rem; line-height:1.6; color:var(--text-secondary);">
+        <p style="margin-bottom:10px;"><strong>Menstruação (dias 1-3):</strong> Relação livre nos 3 primeiros dias, se ciclo regular.</p>
+        <p style="margin-bottom:10px;"><strong>Dias secos (PBI Seco):</strong> Relação em noites alternadas (regra dos dias alternados). Não dois dias seguidos.</p>
+        <p style="margin-bottom:10px;"><strong>PBI de Muco Contínuo:</strong> Relação em noites alternadas se o padrão for o mesmo, sem mudanças.</p>
+        <p style="margin-bottom:10px;"><strong>Fase Fértil:</strong> Abstinência desde o primeiro sinal de mudança do PBI até 3 dias completos após o Ápice.</p>
+        <p><strong>Pós-Ápice (4º dia em diante):</strong> Relação livre até a próxima menstruação.</p>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>⚠️ Importante</h3>
+      <p style="font-size:0.85rem; line-height:1.6; color:var(--text-secondary);">
+        Este app é uma ferramenta de registro. Procure uma instrutora certificada do Método Billings para aprender o método corretamente e ter acompanhamento personalizado.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS SCREEN ===== -->
+<div id="screen-settings" class="screen">
+  <div class="header">
+    <h1>⚙️ Configurações</h1>
+  </div>
+  <div class="settings-container">
+    <div class="settings-card">
+      <h3>🌿 Seu Padrão Básico de Infertilidade (PBI)</h3>
+      <p>O PBI é o padrão que sua instrutora identificou como seu estado infértil. Selecione o que melhor descreve o seu.</p>
+      <div id="pbi-options">
+        <div class="pbi-option" data-pbi="dry" onclick="selectPBI(this)">
+          <div class="pbi-title">Seca sem muco</div>
+          <div class="pbi-desc">Sensação seca na vulva e ausência total de muco. Mais comum.</div>
+        </div>
+        <div class="pbi-option" data-pbi="dry-no-sensation" onclick="selectPBI(this)">
+          <div class="pbi-title">Seca / Sem sensação</div>
+          <div class="pbi-desc">Alternância entre sensação seca e nenhuma sensação, sem muco.</div>
+        </div>
+        <div class="pbi-option" data-pbi="continuous-mucus" onclick="selectPBI(this)">
+          <div class="pbi-title">Muco contínuo inalterado</div>
+          <div class="pbi-desc">Presença constante de muco com as mesmas características dia após dia, sem mudança. A instrutora confirmou como PBI.</div>
+        </div>
+        <div class="pbi-option" data-pbi="continuous-discharge" onclick="selectPBI(this)">
+          <div class="pbi-title">Secreção contínua</div>
+          <div class="pbi-desc">Corrimento leve constante com padrão inalterado. A instrutora confirmou como PBI.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>📅 Ciclo Atual</h3>
+      <p>Número do ciclo atual para organizar os registros.</p>
+      <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+        <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCurrentCycle(-1)">−</button>
+        <input type="number" id="input-current-cycle" value="1" min="1"
+          style="flex:1; text-align:center; font-size:1.5rem; font-family:'DM Serif Display',serif; border:2px solid var(--rose-100); border-radius:var(--radius-sm); padding:8px; outline:none; color:var(--rose-600);"
+          onchange="saveCurrentCycle()">
+        <button class="btn btn-outline" style="width:44px; height:44px; flex:none; padding:0; font-size:1.2rem;" onclick="adjustCurrentCycle(1)">+</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>🗄️ Dados</h3>
+      <p>Gerencie seus dados salvos localmente neste dispositivo.</p>
+      <button class="btn btn-secondary" style="width:100%; margin-bottom:8px;" onclick="exportData()">📤 Exportar dados (JSON)</button>
+      <label class="btn btn-secondary" style="width:100%; display:block; text-align:center; margin-bottom:8px; cursor:pointer;">
+        📥 Importar dados
+        <input type="file" accept=".json" style="display:none;" onchange="importData(event)">
+      </label>
+      <div class="danger-zone">
+        <button class="btn-danger" onclick="clearAllData()">🗑️ Apagar todos os dados</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showScreen('screen-home'); refreshHome();" data-screen="screen-home">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Início</span>
+  </button>
+  <button class="nav-item" onclick="startRegister()" data-screen="screen-register">
+    <span class="nav-icon" style="font-size:2rem; margin-top:-14px; background:var(--rose-500); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(244,63,94,0.4);">✏️</span>
+    <span class="nav-label">Registrar</span>
+  </button>
+  <button class="nav-item" onclick="showScreen('screen-history'); renderHistory();" data-screen="screen-history">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Histórico</span>
+  </button>
+</nav>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-content" id="detail-modal-content"></div>
+</div>
+
+<script>
+// ===== DATA STORE =====
+const STORAGE_KEY = 'mob_data';
+const PBI_KEY = 'mob_pbi';
+const CYCLE_KEY = 'mob_current_cycle';
+
+function getData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function getPBI() { return localStorage.getItem(PBI_KEY) || 'dry'; }
+function savePBI(pbi) { localStorage.setItem(PBI_KEY, pbi); }
+function getCurrentCycle() { return parseInt(localStorage.getItem(CYCLE_KEY)) || 1; }
+function saveCurrentCycle() {
+  const v = parseInt(document.getElementById('input-current-cycle').value) || 1;
+  localStorage.setItem(CYCLE_KEY, v);
+}
+
+// ===== NAVIGATION =====
+let currentStep = 1;
+const totalSteps = 4;
+let formData = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-item[data-screen="${id}"]`);
+  if (navBtn) navBtn.classList.add('active');
+}
+
+function startRegister() {
+  currentStep = 1;
+  formData = {};
+  // Reset selections
+  document.querySelectorAll('.option-pill').forEach(p => { p.classList.remove('selected', 'selected-green'); });
+  document.querySelectorAll('.toggle').forEach(t => t.classList.remove('on'));
+  document.getElementById('input-obs').value = '';
+  // Auto-suggest cycle day
+  const data = getData();
+  const todayStr = getTodayStr();
+  const existing = data.find(d => d.date === todayStr);
+  if (existing) {
+    document.getElementById('input-cycle-day').value = existing.cycleDay;
+  } else {
+    const lastEntry = data.sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (lastEntry) {
+      const daysSince = Math.floor((new Date(todayStr) - new Date(lastEntry.date)) / 86400000);
+      document.getElementById('input-cycle-day').value = Math.max(1, lastEntry.cycleDay + daysSince);
+    } else {
+      document.getElementById('input-cycle-day').value = 1;
+    }
+  }
+  document.getElementById('register-date').textContent = formatDate(new Date());
+  showScreen('screen-register');
+  updateSteps();
+}
+
+function updateSteps() {
+  const ind = document.getElementById('step-indicator');
+  ind.innerHTML = '';
+  for (let i = 1; i <= totalSteps; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === currentStep ? ' active' : (i < currentStep ? ' done' : ''));
+    ind.appendChild(dot);
+  }
+  document.querySelectorAll('.step-content').forEach(s => s.style.display = 'none');
+  document.getElementById('step-' + currentStep).style.display = 'block';
+  document.getElementById('btn-prev').style.display = currentStep > 1 ? '' : 'none';
+  document.getElementById('btn-next').textContent = currentStep === totalSteps ? 'Calcular ✨' : 'Próximo';
+}
+
+function nextStep() {
+  collectStepData();
+  if (currentStep < totalSteps) {
+    currentStep++;
+    updateSteps();
+  } else {
+    calculateAndSave();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) { currentStep--; updateSteps(); }
+}
+
+function collectStepData() {
+  if (currentStep === 1) {
+    formData.cycleDay = parseInt(document.getElementById('input-cycle-day').value) || 1;
+    formData.bleeding = getSelectedValue('bleeding') || 'none';
+  } else if (currentStep === 2) {
+    formData.sensation = getSelectedValue('sensation') || 'dry';
+  } else if (currentStep === 3) {
+    formData.mucus = getSelectedValue('mucus') || 'none';
+  } else if (currentStep === 4) {
+    formData.relation = document.getElementById('toggle-relation').classList.contains('on');
+    formData.apex = document.getElementById('toggle-apex').classList.contains('on');
+    formData.obs = document.getElementById('input-obs').value.trim();
+  }
+}
+
+function adjustCycleDay(delta) {
+  const inp = document.getElementById('input-cycle-day');
+  inp.value = Math.max(1, (parseInt(inp.value) || 1) + delta);
+}
+
+function selectOption(el) {
+  const group = el.dataset.group;
+  document.querySelectorAll(`.option-pill[data-group="${group}"]`).forEach(p => p.classList.remove('selected', 'selected-green'));
+  el.classList.add('selected');
+}
+
+function getSelectedValue(group) {
+  const sel = document.querySelector(`.option-pill[data-group="${group}"].selected, .option-pill[data-group="${group}"].selected-green`);
+  return sel ? sel.dataset.value : null;
+}
+
+function toggleSwitch(el) { el.classList.toggle('on'); }
+
+// ===== MOB LOGIC ENGINE =====
+function calculateMOB(entry, allEntries) {
+  const pbi = getPBI();
+  const { cycleDay, bleeding, sensation, mucus, apex } = entry;
+
+  let seal = '', phase = '', rule = '', canRelate = '', ruleDetail = '';
+  const isMenstruation = bleeding === 'menstruation';
+  const isBleeding = bleeding !== 'none';
+
+  // Check for apex in recent days
+  const sortedEntries = allEntries.filter(e => e.cycle === entry.cycle).sort((a, b) => a.cycleDay - b.cycleDay);
+  let apexDay = null;
+  for (const e of sortedEntries) {
+    if (e.apex) apexDay = e.cycleDay;
+  }
+
+  const daysAfterApex = apexDay && cycleDay > apexDay ? cycleDay - apexDay : null;
+
+  // Determine if current observation matches PBI
+  const isPBI = matchesPBI(sensation, mucus, pbi);
+
+  // Determine if there's a change from PBI (fertile signs)
+  const hasFertileSign = !isPBI && !isMenstruation;
+  const isHighFertility = sensation === 'slippery' || sensation === 'wet' || mucus === 'eggwhite' || mucus === 'transparent';
+
+  // Check if had relation yesterday (for alternating days rule)
+  const yesterdayEntry = sortedEntries.find(e => e.cycleDay === cycleDay - 1);
+  const hadRelationYesterday = yesterdayEntry?.relation;
+
+  // ===== PHASE DETERMINATION =====
+
+  if (isMenstruation) {
+    seal = '🔴';
+    phase = 'Menstruação';
+    if (cycleDay <= 3) {
+      rule = 'RELAÇÃO POSSÍVEL';
+      canRelate = 'yes';
+      ruleDetail = 'Nos primeiros 3 dias de menstruação, a relação é permitida (se o ciclo anterior foi de duração normal, ≥ 26 dias). O sangramento impossibilita a observação do muco.';
+    } else {
+      rule = 'ABSTINÊNCIA';
+      canRelate = 'no';
+      ruleDetail = 'A partir do 4º dia de menstruação, é necessária abstinência. O sangramento pode mascarar sinais de fertilidade que já podem estar começando.';
+    }
+  } else if (daysAfterApex !== null && daysAfterApex >= 1 && daysAfterApex <= 3) {
+    seal = '🟡';
+    phase = `Pós-Ápice (dia ${daysAfterApex} de 3)`;
+    rule = 'ABSTINÊNCIA';
+    canRelate = 'no';
+    ruleDetail = `Você está no ${daysAfterApex}º dia após o Ápice. É necessário aguardar 3 dias completos após o Ápice para confirmar que a ovulação ocorreu. Mantenha abstinência até completar a contagem.`;
+  } else if (daysAfterApex !== null && daysAfterApex >= 4) {
+    seal = '🟢';
+    phase = 'Fase Infértil Pós-Ovulatória';
+    rule = 'RELAÇÃO LIVRE';
+    canRelate = 'yes';
+    ruleDetail = 'Você está na fase infértil confirmada após a ovulação. A relação é livre a qualquer momento do dia ou da noite, até a próxima menstruação.';
+  } else if (hasFertileSign || isHighFertility) {
+    seal = '⚪';
+    phase = 'Fase Fértil';
+    rule = 'ABSTINÊNCIA';
+    canRelate = 'no';
+    if (isHighFertility) {
+      ruleDetail = 'Sinais de alta fertilidade detectados (sensação escorregadia/molhada ou muco tipo clara de ovo). Abstinência obrigatória. A ovulação pode estar próxima.';
+    } else {
+      ruleDetail = 'Houve mudança do seu Padrão Básico de Infertilidade. Qualquer mudança no padrão indica possível início da fase fértil. Mantenha abstinência e observe nos próximos dias.';
+    }
+  } else if (isPBI) {
+    seal = '🟢';
+    phase = 'PBI — Padrão Básico de Infertilidade';
+
+    if (pbi === 'dry' || pbi === 'dry-no-sensation') {
+      if (hadRelationYesterday) {
+        rule = 'ABSTINÊNCIA HOJE';
+        canRelate = 'no';
+        ruleDetail = 'Regra dos dias alternados: como houve relação ontem, hoje é dia de observação. O fluido seminal pode mascarar o início do muco fértil. Relação permitida amanhã à noite se o PBI se mantiver.';
+      } else {
+        rule = 'RELAÇÃO À NOITE';
+        canRelate = 'caution';
+        ruleDetail = 'Dia seco sem mudança do PBI. A relação é permitida à noite (nunca pela manhã ou tarde, para permitir observação completa do dia). Amanhã será dia de observação (abstinência).';
+      }
+    } else {
+      // Continuous mucus PBI
+      if (hadRelationYesterday) {
+        rule = 'ABSTINÊNCIA HOJE';
+        canRelate = 'no';
+        ruleDetail = 'Regra dos dias alternados: como houve relação ontem, hoje é dia de observação. Precisa de um dia sem relação para verificar se o padrão de muco permanece inalterado.';
+      } else {
+        rule = 'RELAÇÃO À NOITE';
+        canRelate = 'caution';
+        ruleDetail = 'O muco permanece no seu padrão básico inalterado. Relação permitida à noite. Amanhã observe se houve qualquer mudança no padrão antes de ter relação novamente.';
+      }
+    }
+  } else if (isBleeding && !isMenstruation) {
+    seal = '⚪';
+    phase = 'Sangramento fora da menstruação';
+    rule = 'ABSTINÊNCIA';
+    canRelate = 'no';
+    ruleDetail = 'Qualquer sangramento fora da menstruação deve ser tratado como potencialmente fértil. O sangramento impede a observação do muco. Aguarde o retorno do seu PBI.';
+  } else {
+    // Fallback
+    seal = '⚪';
+    phase = 'Em observação';
+    rule = 'CAUTELA';
+    canRelate = 'caution';
+    ruleDetail = 'Observe com atenção. Se estiver em dúvida sobre o seu padrão, considere o dia como potencialmente fértil e aguarde confirmação.';
+  }
+
+  return { seal, phase, rule, canRelate, ruleDetail };
+}
+
+function matchesPBI(sensation, mucus, pbi) {
+  switch (pbi) {
+    case 'dry':
+      return sensation === 'dry' && (mucus === 'none');
+    case 'dry-no-sensation':
+      return (sensation === 'dry' || sensation === 'nothing') && (mucus === 'none');
+    case 'continuous-mucus':
+      return (mucus === 'pasty' || mucus === 'creamy' || mucus === 'sticky' || mucus === 'cloudy')
+        && (sensation !== 'slippery' && sensation !== 'wet');
+    case 'continuous-discharge':
+      return (mucus === 'creamy' || mucus === 'cloudy')
+        && (sensation !== 'slippery' && sensation !== 'wet');
+    default:
+      return sensation === 'dry' && mucus === 'none';
+  }
+}
+
+// ===== SAVE & DISPLAY =====
+function calculateAndSave() {
+  collectStepData();
+
+  const todayStr = getTodayStr();
+  const data = getData();
+  const cycle = getCurrentCycle();
+
+  const entry = {
+    date: todayStr,
+    cycleDay: formData.cycleDay,
+    bleeding: formData.bleeding,
+    sensation: formData.sensation,
+    mucus: formData.mucus,
+    relation: formData.relation,
+    apex: formData.apex,
+    obs: formData.obs,
+    cycle: cycle,
+    timestamp: Date.now()
+  };
+
+  // Calculate result
+  const result = calculateMOB(entry, [...data.filter(d => d.date !== todayStr), entry]);
+  entry.seal = result.seal;
+  entry.phase = result.phase;
+  entry.rule = result.rule;
+  entry.canRelate = result.canRelate;
+
+  // Save (replace if exists for same date)
+  const idx = data.findIndex(d => d.date === todayStr);
+  if (idx >= 0) data[idx] = entry;
+  else data.push(entry);
+  saveData(data);
+
+  // Show result
+  showResult(entry, result);
+}
+
+function showResult(entry, result) {
+  const cardClass = result.canRelate === 'yes' ? 'infertile' :
+    result.canRelate === 'no' ? (entry.bleeding === 'menstruation' ? 'menstruation' : 'fertile') : 'waiting';
+
+  const badgeClass = result.canRelate === 'yes' ? 'yes' : result.canRelate === 'no' ? 'no' : 'caution';
+  const badgeText = result.canRelate === 'yes' ? '✅ Relação permitida' :
+    result.canRelate === 'no' ? '🚫 Abstinência' : '⚡ Relação à noite (com cautela)';
+
+  const sensationLabels = { dry: 'Seca', nothing: 'Nenhuma sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorregadia', sticky: 'Pegajosa' };
+  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo' };
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="result-card ${cardClass}">
+      <div class="result-seal">${result.seal}</div>
+      <div class="result-title">${result.phase}</div>
+      <div class="result-subtitle">Dia ${entry.cycleDay} do ciclo</div>
+      <div class="result-rule">
+        <strong>${result.rule}</strong><br><br>
+        ${result.ruleDetail}
+      </div>
+      <div class="relation-badge ${badgeClass}">${badgeText}</div>
+    </div>
+    <div class="form-card" style="animation:slideUp 0.5s ease;">
+      <h3 style="font-size:0.85rem;">Resumo do registro</h3>
+      <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.8;">
+        📅 <strong>${formatDate(new Date(entry.date))}</strong> — Dia ${entry.cycleDay}<br>
+        🌊 Sensação: <strong>${sensationLabels[entry.sensation] || '—'}</strong><br>
+        🔬 Muco: <strong>${mucusLabels[entry.mucus] || '—'}</strong><br>
+        ${entry.bleeding !== 'none' ? '🩸 Sangramento: <strong>' + entry.bleeding + '</strong><br>' : ''}
+        ${entry.relation ? '💑 Relação: <strong>Sim</strong><br>' : ''}
+        ${entry.apex ? '⭐ <strong>Dia de Ápice</strong><br>' : ''}
+        ${entry.obs ? '📝 ' + entry.obs : ''}
+      </div>
+    </div>
+  `;
+  showScreen('screen-result');
+}
+
+// ===== HISTORY =====
+function renderHistory(filterCycle) {
+  const data = getData().sort((a, b) => b.date.localeCompare(a.date));
+
+  // Build cycle filter tabs
+  const cycles = [...new Set(data.map(d => d.cycle))].sort((a, b) => b - a);
+  const tabsEl = document.getElementById('cycle-filter-tabs');
+  tabsEl.innerHTML = `<div class="filter-tab ${!filterCycle ? 'active' : ''}" onclick="renderHistory()">Todos</div>`;
+  cycles.forEach(c => {
+    tabsEl.innerHTML += `<div class="filter-tab ${filterCycle === c ? 'active' : ''}" onclick="renderHistory(${c})">Ciclo ${c}</div>`;
+  });
+
+  const filtered = filterCycle ? data.filter(d => d.cycle === filterCycle) : data;
+  const listEl = document.getElementById('history-list');
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="history-empty"><div class="icon">📋</div><p>Nenhum registro ainda.<br>Comece registrando o dia de hoje!</p></div>';
+    return;
+  }
+
+  const sensationLabels = { dry: 'Seca', nothing: 'S/ sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorreg.', sticky: 'Pegajosa' };
+  const mucusLabels = { none: 'S/ muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo', sticky: 'Pegajoso', transparent: 'Transp.', eggwhite: 'Clara ovo' };
+
+  let html = '';
+  let lastCycle = null;
+
+  filtered.forEach(entry => {
+    if (entry.cycle !== lastCycle) {
+      html += `<div class="cycle-header">Ciclo ${entry.cycle || '?'}</div>`;
+      lastCycle = entry.cycle;
+    }
+
+    const phaseColor = entry.canRelate === 'yes' ? '#d1fae5; color:#065f46' :
+      entry.canRelate === 'no' ? '#fee2e2; color:#991b1b' : '#fef3c7; color:#92400e';
+
+    html += `
+      <div class="history-item" onclick="showDetail('${entry.date}')">
+        <div class="history-seal">${entry.seal || '⚪'}</div>
+        <div class="history-info">
+          <div class="day">Dia ${entry.cycleDay} — ${formatDateShort(new Date(entry.date))}
+            ${entry.relation ? '<span class="relation-dot" title="Relação"></span>' : ''}
+            ${entry.apex ? ' ⭐' : ''}
+          </div>
+          <div class="detail">${sensationLabels[entry.sensation] || '—'} · ${mucusLabels[entry.mucus] || '—'}</div>
+        </div>
+        <div class="history-phase" style="background:${phaseColor}">${entry.rule || '—'}</div>
+      </div>
+    `;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function showDetail(dateStr) {
+  const data = getData();
+  const entry = data.find(d => d.date === dateStr);
+  if (!entry) return;
+
+  const sensationLabels = { dry: 'Seca', nothing: 'Nenhuma sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorregadia', sticky: 'Pegajosa' };
+  const mucusLabels = { none: 'Sem muco', pasty: 'Pastoso', creamy: 'Cremoso', cloudy: 'Turvo/Branco', sticky: 'Pegajoso', transparent: 'Transparente', eggwhite: 'Elástico/Clara de ovo' };
+  const bleedingLabels = { none: 'Nenhum', menstruation: 'Menstruação', spotting: 'Spotting', escape: 'Escape' };
+
+  const result = calculateMOB(entry, data);
+
+  document.getElementById('detail-modal-content').innerHTML = `
+    <h3>${entry.seal} Dia ${entry.cycleDay} — ${formatDate(new Date(entry.date))}</h3>
+    <div style="font-size:0.88rem; line-height:1.8; color:var(--text-secondary); margin-bottom:16px;">
+      <strong>Fase:</strong> ${result.phase}<br>
+      <strong>Sensação:</strong> ${sensationLabels[entry.sensation] || '—'}<br>
+      <strong>Muco:</strong> ${mucusLabels[entry.mucus] || '—'}<br>
+      <strong>Sangramento:</strong> ${bleedingLabels[entry.bleeding] || 'Nenhum'}<br>
+      <strong>Relação:</strong> ${entry.relation ? 'Sim 💑' : 'Não'}<br>
+      <strong>Ápice:</strong> ${entry.apex ? 'Sim ⭐' : 'Não'}<br>
+      ${entry.obs ? '<strong>Obs:</strong> ' + entry.obs + '<br>' : ''}
+    </div>
+    <div class="result-rule" style="margin-bottom:16px;">
+      <strong>${result.rule}</strong><br><br>
+      ${result.ruleDetail}
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal()">Fechar</button>
+      <button class="btn btn-outline" style="flex:1; color:#dc2626; border-color:#fca5a5;" onclick="deleteEntry('${entry.date}')">Excluir</button>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('detail-modal').classList.remove('show'); }
+document.getElementById('detail-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function deleteEntry(dateStr) {
+  if (!confirm('Deseja excluir este registro?')) return;
+  const data = getData().filter(d => d.date !== dateStr);
+  saveData(data);
+  closeModal();
+  renderHistory();
+}
+
+// ===== SETTINGS =====
+function selectPBI(el) {
+  document.querySelectorAll('.pbi-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  savePBI(el.dataset.pbi);
+}
+
+function adjustCurrentCycle(delta) {
+  const inp = document.getElementById('input-current-cycle');
+  inp.value = Math.max(1, (parseInt(inp.value) || 1) + delta);
+  saveCurrentCycle();
+}
+
+function loadSettings() {
+  const pbi = getPBI();
+  document.querySelectorAll('.pbi-option').forEach(o => {
+    o.classList.toggle('selected', o.dataset.pbi === pbi);
+  });
+  document.getElementById('input-current-cycle').value = getCurrentCycle();
+}
+
+function exportData() {
+  const data = { entries: getData(), pbi: getPBI(), cycle: getCurrentCycle(), exported: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `mob-backup-${getTodayStr()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.entries) {
+        saveData(imported.entries);
+        if (imported.pbi) savePBI(imported.pbi);
+        if (imported.cycle) localStorage.setItem(CYCLE_KEY, imported.cycle);
+        alert('Dados importados com sucesso!');
+        refreshHome();
+        loadSettings();
+      }
+    } catch { alert('Erro ao importar arquivo.'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('Tem certeza? Todos os registros serão apagados permanentemente.')) return;
+  if (!confirm('Última confirmação: apagar TODOS os dados?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  refreshHome();
+  alert('Dados apagados.');
+}
+
+// ===== HOME =====
+function refreshHome() {
+  const todayStr = getTodayStr();
+  const data = getData();
+  const todayEntry = data.find(d => d.date === todayStr);
+
+  document.getElementById('today-date').textContent = formatDate(new Date()).toUpperCase();
+
+  if (todayEntry) {
+    const result = calculateMOB(todayEntry, data);
+    document.getElementById('today-cycle-day').textContent = `${result.seal} Dia ${todayEntry.cycleDay}`;
+    document.getElementById('today-status').textContent = result.rule;
+
+    const card = document.getElementById('today-card');
+    if (result.canRelate === 'yes') {
+      card.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+      card.style.boxShadow = '0 8px 25px rgba(16,185,129,0.3)';
+    } else if (result.canRelate === 'no') {
+      card.style.background = 'linear-gradient(135deg, #f43f5e, #fb7185)';
+      card.style.boxShadow = '0 8px 25px rgba(244,63,94,0.3)';
+    } else {
+      card.style.background = 'linear-gradient(135deg, #f59e0b, #fbbf24)';
+      card.style.boxShadow = '0 8px 25px rgba(245,158,11,0.3)';
+    }
+  } else {
+    document.getElementById('today-cycle-day').textContent = 'Sem registro';
+    document.getElementById('today-status').textContent = 'Toque em ✏️ para registrar o dia';
+    const card = document.getElementById('today-card');
+    card.style.background = 'linear-gradient(135deg, var(--rose-500), var(--rose-400))';
+    card.style.boxShadow = '0 8px 25px rgba(244,63,94,0.3)';
+  }
+
+  // Recent entries
+  const recent = data.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const recentEl = document.getElementById('recent-entries');
+  if (recent.length === 0) {
+    recentEl.innerHTML = '<div class="history-empty" style="padding:20px;"><p style="font-size:0.85rem;">Nenhum registro ainda</p></div>';
+  } else {
+    const sensationLabels = { dry: 'Seca', nothing: 'S/ sensação', humid: 'Úmida', wet: 'Molhada', slippery: 'Escorreg.', sticky: 'Pegajosa' };
+    recentEl.innerHTML = recent.map(e => `
+      <div class="history-item" onclick="showDetail('${e.date}')">
+        <div class="history-seal">${e.seal || '⚪'}</div>
+        <div class="history-info">
+          <div class="day">Dia ${e.cycleDay} — ${formatDateShort(new Date(e.date))}
+            ${e.relation ? '<span class="relation-dot"></span>' : ''}${e.apex ? ' ⭐' : ''}
+          </div>
+          <div class="detail">${sensationLabels[e.sensation] || '—'} · ${e.rule || '—'}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// ===== UTILS =====
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function formatDate(d) {
+  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  return `${days[d.getDay()]}, ${d.getDate()} de ${months[d.getMonth()]}`;
+}
+
+function formatDateShort(d) {
+  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  return `${d.getDate()}/${months[d.getMonth()]}`;
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  refreshHome();
+  loadSettings();
+});
+
+// ===== SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
