@@ -562,9 +562,9 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
       <span class="icon">✏️</span>
       <span class="label">Registrar Hoje</span>
     </button>
-    <button class="quick-btn" onclick="showScreen('screen-history')">
-      <span class="icon">📊</span>
-      <span class="label">Histórico</span>
+    <button class="quick-btn" onclick="startRegister(); document.getElementById('input-date').showPicker && document.getElementById('input-date').showPicker()">
+      <span class="icon">📆</span>
+      <span class="label">Data Anterior</span>
     </button>
     <button class="quick-btn" onclick="showScreen('screen-guide')">
       <span class="icon">📖</span>
@@ -586,8 +586,13 @@ textarea.obs-input::placeholder { color: var(--text-muted); }
 <!-- ===== REGISTER SCREEN ===== -->
 <div id="screen-register" class="screen">
   <div class="header">
-    <h1>Registro do Dia</h1>
+    <h1 id="register-title">Registro do Dia</h1>
     <div class="subtitle" id="register-date"></div>
+    <div style="margin-top:8px;">
+      <input type="date" id="input-date"
+        style="font-family:'Nunito',sans-serif; font-size:0.85rem; font-weight:600; color:var(--rose-600); border:2px solid var(--rose-200); border-radius:50px; padding:6px 16px; outline:none; background:var(--white); cursor:pointer;"
+        onchange="onDateChange(this.value)">
+    </div>
   </div>
 
   <div class="step-indicator" id="step-indicator"></div>
@@ -839,6 +844,7 @@ function saveCurrentCycle() {
 let currentStep = 1;
 const totalSteps = 4;
 let formData = {};
+let editingDate = null; // null = novo registro
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -848,31 +854,103 @@ function showScreen(id) {
   if (navBtn) navBtn.classList.add('active');
 }
 
-function startRegister() {
+function startRegister(dateStr) {
   currentStep = 1;
   formData = {};
+  editingDate = null;
+
   // Reset selections
   document.querySelectorAll('.option-pill').forEach(p => { p.classList.remove('selected', 'selected-green'); });
   document.querySelectorAll('.toggle').forEach(t => t.classList.remove('on'));
   document.getElementById('input-obs').value = '';
-  // Auto-suggest cycle day
+  document.getElementById('register-title').textContent = 'Registro do Dia';
+
+  const targetDate = dateStr || getTodayStr();
+  document.getElementById('input-date').value = targetDate;
+  document.getElementById('register-date').textContent = formatDate(new Date(targetDate + 'T12:00:00'));
+
+  // Auto-suggest cycle day for the target date
   const data = getData();
-  const todayStr = getTodayStr();
-  const existing = data.find(d => d.date === todayStr);
+  const existing = data.find(d => d.date === targetDate);
   if (existing) {
     document.getElementById('input-cycle-day').value = existing.cycleDay;
   } else {
-    const lastEntry = data.sort((a, b) => b.date.localeCompare(a.date))[0];
+    const lastEntry = data.sort((a, b) => b.date.localeCompare(a.date))
+      .find(e => e.date < targetDate);
     if (lastEntry) {
-      const daysSince = Math.floor((new Date(todayStr) - new Date(lastEntry.date)) / 86400000);
+      const daysSince = Math.floor((new Date(targetDate) - new Date(lastEntry.date)) / 86400000);
       document.getElementById('input-cycle-day').value = Math.max(1, lastEntry.cycleDay + daysSince);
     } else {
       document.getElementById('input-cycle-day').value = 1;
     }
   }
-  document.getElementById('register-date').textContent = formatDate(new Date());
+
   showScreen('screen-register');
   updateSteps();
+}
+
+function editEntry(dateStr) {
+  closeModal();
+  const data = getData();
+  const entry = data.find(d => d.date === dateStr);
+  if (!entry) return;
+
+  currentStep = 1;
+  formData = {};
+  editingDate = dateStr;
+
+  // Reset first
+  document.querySelectorAll('.option-pill').forEach(p => { p.classList.remove('selected', 'selected-green'); });
+  document.querySelectorAll('.toggle').forEach(t => t.classList.remove('on'));
+
+  // Pre-fill date
+  document.getElementById('input-date').value = dateStr;
+  document.getElementById('register-date').textContent = formatDate(new Date(dateStr + 'T12:00:00'));
+  document.getElementById('register-title').textContent = 'Editar Registro';
+
+  // Pre-fill step 1
+  document.getElementById('input-cycle-day').value = entry.cycleDay || 1;
+  const bleedingPill = document.querySelector(`.option-pill[data-group="bleeding"][data-value="${entry.bleeding}"]`);
+  if (bleedingPill) bleedingPill.classList.add('selected');
+
+  // Pre-fill step 2
+  const sensationPill = document.querySelector(`.option-pill[data-group="sensation"][data-value="${entry.sensation}"]`);
+  if (sensationPill) sensationPill.classList.add('selected');
+
+  // Pre-fill step 3
+  const mucusPill = document.querySelector(`.option-pill[data-group="mucus"][data-value="${entry.mucus}"]`);
+  if (mucusPill) mucusPill.classList.add('selected');
+
+  // Pre-fill step 4
+  if (entry.relation) document.getElementById('toggle-relation').classList.add('on');
+  if (entry.apex) document.getElementById('toggle-apex').classList.add('on');
+  document.getElementById('input-obs').value = entry.obs || '';
+
+  showScreen('screen-register');
+  updateSteps();
+}
+
+function onDateChange(newDateStr) {
+  if (!newDateStr) return;
+  document.getElementById('register-date').textContent = formatDate(new Date(newDateStr + 'T12:00:00'));
+
+  // Suggest cycle day if date changed and not editing
+  if (!editingDate) {
+    const data = getData();
+    const existing = data.find(d => d.date === newDateStr);
+    if (existing) {
+      document.getElementById('input-cycle-day').value = existing.cycleDay;
+    } else {
+      const lastEntry = data.sort((a, b) => b.date.localeCompare(a.date))
+        .find(e => e.date < newDateStr);
+      if (lastEntry) {
+        const daysSince = Math.floor((new Date(newDateStr) - new Date(lastEntry.date)) / 86400000);
+        document.getElementById('input-cycle-day').value = Math.max(1, lastEntry.cycleDay + daysSince);
+      } else {
+        document.getElementById('input-cycle-day').value = 1;
+      }
+    }
+  }
 }
 
 function updateSteps() {
@@ -1066,12 +1144,12 @@ function matchesPBI(sensation, mucus, pbi) {
 function calculateAndSave() {
   collectStepData();
 
-  const todayStr = getTodayStr();
+  const selectedDate = document.getElementById('input-date').value || getTodayStr();
   const data = getData();
   const cycle = getCurrentCycle();
 
   const entry = {
-    date: todayStr,
+    date: selectedDate,
     cycleDay: formData.cycleDay,
     bleeding: formData.bleeding,
     sensation: formData.sensation,
@@ -1084,17 +1162,18 @@ function calculateAndSave() {
   };
 
   // Calculate result
-  const result = calculateMOB(entry, [...data.filter(d => d.date !== todayStr), entry]);
+  const result = calculateMOB(entry, [...data.filter(d => d.date !== selectedDate), entry]);
   entry.seal = result.seal;
   entry.phase = result.phase;
   entry.rule = result.rule;
   entry.canRelate = result.canRelate;
 
   // Save (replace if exists for same date)
-  const idx = data.findIndex(d => d.date === todayStr);
+  const idx = data.findIndex(d => d.date === selectedDate);
   if (idx >= 0) data[idx] = entry;
   else data.push(entry);
   saveData(data);
+  editingDate = null;
 
   // Show result
   showResult(entry, result);
@@ -1135,6 +1214,14 @@ function showResult(entry, result) {
       </div>
     </div>
   `;
+  const isRetroactive = entry.date !== getTodayStr();
+  if (isRetroactive) {
+    document.getElementById('result-content').insertAdjacentHTML('afterbegin',
+      `<div style="background:var(--amber); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:12px; font-size:0.82rem; font-weight:600; color:#92400e;">
+        📅 Registro retroativo: ${formatDate(new Date(entry.date + 'T12:00:00'))}
+      </div>`
+    );
+  }
   showScreen('screen-result');
 }
 
@@ -1219,7 +1306,8 @@ function showDetail(dateStr) {
     </div>
     <div style="display:flex; gap:8px;">
       <button class="btn btn-secondary" style="flex:1;" onclick="closeModal()">Fechar</button>
-      <button class="btn btn-outline" style="flex:1; color:#dc2626; border-color:#fca5a5;" onclick="deleteEntry('${entry.date}')">Excluir</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="editEntry('${entry.date}')">✏️ Editar</button>
+      <button class="btn btn-outline" style="flex:none; padding:12px 14px; color:#dc2626; border-color:#fca5a5;" onclick="deleteEntry('${entry.date}')">🗑️</button>
     </div>
   `;
   document.getElementById('detail-modal').classList.add('show');
@@ -1370,6 +1458,10 @@ function formatDateShort(d) {
 document.addEventListener('DOMContentLoaded', () => {
   refreshHome();
   loadSettings();
+  // Set date input max to today
+  const todayStr = getTodayStr();
+  document.getElementById('input-date').max = todayStr;
+  document.getElementById('input-date').value = todayStr;
 });
 
 // ===== SERVICE WORKER =====
